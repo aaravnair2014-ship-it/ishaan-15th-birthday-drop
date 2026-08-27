@@ -7,15 +7,18 @@ import confetti from 'canvas-confetti';
 
 function CustomCursor() {
   const isTouchDevice = 'ontouchstart' in window || window.matchMedia('(pointer: coarse)').matches;
-  
   const [isHovering, setIsHovering] = useState(false);
 
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
 
-  const springConfig = { damping: 28, stiffness: 500, mass: 0.5 };
-  const cursorX = useSpring(mouseX, springConfig);
-  const cursorY = useSpring(mouseY, springConfig);
+  // Outer ring spring (slow)
+  const outerX = useSpring(mouseX, { stiffness: 120, damping: 20 });
+  const outerY = useSpring(mouseY, { stiffness: 120, damping: 20 });
+
+  // Inner dot spring (fast)
+  const innerX = useSpring(mouseX, { stiffness: 800, damping: 20 });
+  const innerY = useSpring(mouseY, { stiffness: 800, damping: 20 });
 
   useEffect(() => {
     if (isTouchDevice) return;
@@ -51,27 +54,40 @@ function CustomCursor() {
   if (isTouchDevice) return null;
 
   return (
-    <motion.div
-      className="fixed top-0 left-0 pointer-events-none z-[9999] hidden lg:block"
-      style={{ x: cursorX, y: cursorY }}
-    >
-      <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center"
-        initial={false}
-        animate={{
-          width: isHovering ? 70 : 20,
-          height: isHovering ? 70 : 20,
-          backgroundColor: isHovering ? 'rgba(214,255,87,0.12)' : 'rgba(214,255,87,0.85)',
-          backdropFilter: isHovering ? 'blur(18px) saturate(180%)' : 'blur(8px) saturate(180%)',
-          WebkitBackdropFilter: isHovering ? 'blur(18px) saturate(180%)' : 'blur(8px) saturate(180%)',
-          border: isHovering ? '1px solid rgba(214,255,87,0.9)' : '1.5px solid #0A0A0A',
-          boxShadow: isHovering ? '0 0 0 2px rgba(10,10,10,0), 0 0 25px rgba(214,255,87,0.2)' : '0 0 0 2px rgba(10,10,10,0.15), 0 0 25px rgba(214,255,87,0.6)'
-        }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      >
-        <div className="w-1.5 h-1.5 bg-charcoal rounded-full mix-blend-normal" />
+    <div className="fixed top-0 left-0 pointer-events-none z-[9999] hidden lg:block">
+      {/* Outer Ring */}
+      <motion.div style={{ x: outerX, y: outerY }} className="absolute top-0 left-0">
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          initial={false}
+          animate={{
+            width: isHovering ? 64 : 36,
+            height: isHovering ? 64 : 36,
+            border: isHovering ? '1px solid rgba(214,255,87,1)' : '1px solid rgba(10,10,10,0.15)',
+            backgroundColor: isHovering ? 'rgba(214,255,87,0.08)' : 'rgba(0,0,0,0)',
+            backdropFilter: isHovering ? 'blur(12px)' : 'blur(0px)',
+            WebkitBackdropFilter: isHovering ? 'blur(12px)' : 'blur(0px)',
+          }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        />
       </motion.div>
-    </motion.div>
+
+      {/* Inner Dot */}
+      <motion.div style={{ x: innerX, y: innerY }} className="absolute top-0 left-0">
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          initial={false}
+          animate={{
+            width: isHovering ? 4 : 8,
+            height: isHovering ? 4 : 8,
+            backgroundColor: isHovering ? '#D6FF57' : '#0A0A0A',
+            border: isHovering ? '0px solid #D6FF57' : '2px solid #D6FF57',
+            boxShadow: '0 0 10px rgba(214,255,87,0.8)'
+          }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        />
+      </motion.div>
+    </div>
   );
 }
 
@@ -400,9 +416,10 @@ function Lab() {
     return saved ? parseInt(saved, 10) : 0;
   });
   
-  const [isFeeding, setIsFeeding] = useState(false);
-  const lastFed = useRef(0);
-  
+  const COOLDOWN_MS = 800;
+  const [isCooldown, setIsCooldown] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+
   const messages = [
     "Bamboo +1 from Aarav 🎋",
     "Panda is full of love 🐼",
@@ -411,12 +428,22 @@ function Lab() {
   ];
   
   const handleFeed = () => {
-    const now = Date.now();
-    if (now - lastFed.current < 800) return;
-    lastFed.current = now;
+    if (isCooldown) return;
     
-    setIsFeeding(true);
-    setTimeout(() => setIsFeeding(false), 800);
+    setIsCooldown(true);
+    setTimeLeft(COOLDOWN_MS);
+
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= COOLDOWN_MS) {
+        clearInterval(timer);
+        setTimeLeft(0);
+        setIsCooldown(false);
+      } else {
+        setTimeLeft(COOLDOWN_MS - elapsed);
+      }
+    }, 16);
 
     setBambooCount(prev => {
       const next = prev + 1;
@@ -471,14 +498,34 @@ function Lab() {
         </div>
 
         <motion.button
-          disabled={isFeeding}
-          whileHover={!isFeeding ? { scale: 1.04 } : {}}
-          whileTap={!isFeeding ? { scale: 0.96 } : {}}
-          animate={{ scale: isFeeding ? 0.95 : 1, opacity: isFeeding ? 0.6 : 1 }}
+          disabled={isCooldown}
+          whileHover={!isCooldown ? { scale: 1.04 } : {}}
+          whileTap={!isCooldown ? { scale: 0.96 } : {}}
+          animate={{ scale: isCooldown ? 0.95 : 1, opacity: isCooldown ? 0.7 : 1 }}
           onClick={handleFeed}
-          className="bg-lime-punch text-charcoal px-8 py-5 sm:px-10 sm:py-6 rounded-full font-black text-lg sm:text-xl lg:text-2xl flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto mx-auto shadow-[0_0_40px_rgba(214,255,87,0.2)] hover:shadow-[0_0_60px_rgba(214,255,87,0.4)] transition-shadow relative z-10"
+          className="bg-lime-punch text-charcoal px-8 py-5 sm:px-10 sm:py-6 rounded-full font-black text-lg sm:text-xl lg:text-2xl flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto mx-auto shadow-[0_0_40px_rgba(214,255,87,0.2)] hover:shadow-[0_0_60px_rgba(214,255,87,0.4)] transition-shadow relative z-10 min-w-[280px]"
         >
-          Aarav fed the Panda <Sprout className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+          {isCooldown ? (
+            <span className="tabular-nums">{(timeLeft / 1000).toFixed(1)}s</span>
+          ) : (
+            <>
+              Aarav fed the Panda <Sprout className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+            </>
+          )}
+
+          {isCooldown && (
+            <svg width="24" height="24" className="absolute bottom-1/2 translate-y-1/2 right-4 -rotate-90 bg-black/20 rounded-full">
+              <motion.circle 
+                cx="12" cy="12" r="10" 
+                stroke="#D6FF57" 
+                strokeWidth="2.5" 
+                fill="none" 
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.8, ease: "linear" }}
+              />
+            </svg>
+          )}
         </motion.button>
       </motion.div>
     </section>
