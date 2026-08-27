@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --color-off-white: #FAF9F6;
+  --color-charcoal: #0A0A0A;
+  --color-bamboo-mist: #E8F0E8;
+  --color-lime-punch: #D6FF57;
+  
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+@layer base {
+  body {
+    background-color: var(--color-off-white);
+    color: var(--color-charcoal);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+  ::selection {
+    background-color: var(--color-lime-punch);
+    color: var(--color-charcoal);
+  }
+  
+  @media (min-width: 768px) {
+    *, *::before, *::after {
+      cursor: none !important;
+    }
+  }
+}
