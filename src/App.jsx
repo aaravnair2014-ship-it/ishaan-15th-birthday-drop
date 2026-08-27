@@ -6,6 +6,8 @@ import { Toaster, toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
 function CustomCursor() {
+  const isTouchDevice = 'ontouchstart' in window || window.matchMedia('(pointer: coarse)').matches;
+
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
   const scale = useMotionValue(1);
@@ -16,6 +18,8 @@ function CustomCursor() {
   const cursorScale = useSpring(scale, springConfig);
 
   useEffect(() => {
+    if (isTouchDevice) return;
+
     const handleMouseMove = (e) => {
       mouseX.set(e.clientX - 6);
       mouseY.set(e.clientY - 6);
@@ -40,7 +44,9 @@ function CustomCursor() {
       window.removeEventListener('mouseover', handleMouseOver);
       window.removeEventListener('mouseout', handleMouseOut);
     };
-  }, [mouseX, mouseY, scale]);
+  }, [mouseX, mouseY, scale, isTouchDevice]);
+
+  if (isTouchDevice) return null;
 
   return (
     <motion.div
