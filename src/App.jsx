@@ -59,21 +59,17 @@ function CustomCursor() {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center"
         initial={false}
         animate={{
-          width: isHovering ? 60 : 20,
-          height: isHovering ? 60 : 20,
-          backgroundColor: isHovering ? 'rgba(214,255,87,0.1)' : 'rgba(214,255,87,0.25)',
-          backdropFilter: isHovering ? 'blur(16px) saturate(180%)' : 'blur(8px) saturate(180%)',
-          WebkitBackdropFilter: isHovering ? 'blur(16px) saturate(180%)' : 'blur(8px) saturate(180%)',
-          border: isHovering ? '1px solid rgba(214,255,87,1)' : '1px solid rgba(214,255,87,0.6)',
-          boxShadow: '0 0 20px rgba(214,255,87,0.3)'
+          width: isHovering ? 70 : 20,
+          height: isHovering ? 70 : 20,
+          backgroundColor: isHovering ? 'rgba(214,255,87,0.12)' : 'rgba(214,255,87,0.85)',
+          backdropFilter: isHovering ? 'blur(18px) saturate(180%)' : 'blur(8px) saturate(180%)',
+          WebkitBackdropFilter: isHovering ? 'blur(18px) saturate(180%)' : 'blur(8px) saturate(180%)',
+          border: isHovering ? '1px solid rgba(214,255,87,0.9)' : '1.5px solid #0A0A0A',
+          boxShadow: isHovering ? '0 0 0 2px rgba(10,10,10,0), 0 0 25px rgba(214,255,87,0.2)' : '0 0 0 2px rgba(10,10,10,0.15), 0 0 25px rgba(214,255,87,0.6)'
         }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
-        <motion.div 
-          initial={false}
-          animate={{ scale: isHovering ? 1 : 0, opacity: isHovering ? 1 : 0 }}
-          className="w-1.5 h-1.5 bg-[#D6FF57] rounded-full"
-        />
+        <div className="w-1.5 h-1.5 bg-charcoal rounded-full mix-blend-normal" />
       </motion.div>
     </motion.div>
   );
@@ -404,22 +400,44 @@ function Lab() {
     return saved ? parseInt(saved, 10) : 0;
   });
   
+  const [isFeeding, setIsFeeding] = useState(false);
+  const lastFed = useRef(0);
+  
+  const messages = [
+    "Bamboo +1 from Aarav 🎋",
+    "Panda is full of love 🐼",
+    "Ishaan's panda is vibing",
+    "Fed with friendship"
+  ];
+  
   const handleFeed = () => {
+    const now = Date.now();
+    if (now - lastFed.current < 800) return;
+    lastFed.current = now;
+    
+    setIsFeeding(true);
+    setTimeout(() => setIsFeeding(false), 800);
+
     setBambooCount(prev => {
       const next = prev + 1;
       localStorage.setItem('ishaanBambooCount', next.toString());
+      
+      toast(messages[next % messages.length], {
+        duration: 2000,
+        style: {
+          background: 'rgba(10,10,10,0.75)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border: '1px solid rgba(214,255,87,0.3)',
+          color: '#FAF9F6',
+          borderRadius: '16px',
+          fontWeight: '600',
+          fontSize: '13px',
+          letterSpacing: '-0.02em'
+        }
+      });
+      
       return next;
-    });
-    
-    toast("Panda fed +1 bamboo from Aarav", {
-      icon: '🌿',
-      style: {
-        background: '#D6FF57',
-        color: '#0A0A0A',
-        border: 'none',
-        fontWeight: 'bold',
-        fontSize: '15px'
-      }
     });
   };
 
@@ -453,8 +471,10 @@ function Lab() {
         </div>
 
         <motion.button
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.96 }}
+          disabled={isFeeding}
+          whileHover={!isFeeding ? { scale: 1.04 } : {}}
+          whileTap={!isFeeding ? { scale: 0.96 } : {}}
+          animate={{ scale: isFeeding ? 0.95 : 1, opacity: isFeeding ? 0.6 : 1 }}
           onClick={handleFeed}
           className="bg-lime-punch text-charcoal px-8 py-5 sm:px-10 sm:py-6 rounded-full font-black text-lg sm:text-xl lg:text-2xl flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto mx-auto shadow-[0_0_40px_rgba(214,255,87,0.2)] hover:shadow-[0_0_60px_rgba(214,255,87,0.4)] transition-shadow relative z-10"
         >
@@ -535,7 +555,7 @@ export default function App() {
         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
       />
       <CustomCursor />
-      <Toaster position="bottom-center" />
+      <Toaster position="bottom-right" />
       <Navbar />
       <Hero />
       <Marquee />
