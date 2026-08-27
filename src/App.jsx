@@ -12,13 +12,9 @@ function CustomCursor() {
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
 
-  // Outer ring spring (slow)
-  const outerX = useSpring(mouseX, { stiffness: 120, damping: 20 });
-  const outerY = useSpring(mouseY, { stiffness: 120, damping: 20 });
-
-  // Inner dot spring (fast)
-  const innerX = useSpring(mouseX, { stiffness: 800, damping: 20 });
-  const innerY = useSpring(mouseY, { stiffness: 800, damping: 20 });
+  // Outer ring spring (smooth lag, zero wiggle)
+  const outerX = useSpring(mouseX, { stiffness: 400, damping: 45 });
+  const outerY = useSpring(mouseY, { stiffness: 400, damping: 45 });
 
   useEffect(() => {
     if (isTouchDevice) return;
@@ -56,7 +52,7 @@ function CustomCursor() {
   return (
     <div className="fixed top-0 left-0 pointer-events-none z-[9999] hidden lg:block">
       {/* Outer Ring */}
-      <motion.div style={{ x: outerX, y: outerY }} className="absolute top-0 left-0">
+      <motion.div style={{ x: outerX, y: outerY, willChange: 'transform' }} className="absolute top-0 left-0">
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
           initial={false}
@@ -68,12 +64,12 @@ function CustomCursor() {
             backdropFilter: isHovering ? 'blur(12px)' : 'blur(0px)',
             WebkitBackdropFilter: isHovering ? 'blur(12px)' : 'blur(0px)',
           }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
         />
       </motion.div>
 
-      {/* Inner Dot */}
-      <motion.div style={{ x: innerX, y: innerY }} className="absolute top-0 left-0">
+      {/* Inner Dot - raw values, no spring, zero wiggle */}
+      <motion.div style={{ x: mouseX, y: mouseY, willChange: 'transform' }} className="absolute top-0 left-0">
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
           initial={false}
@@ -84,7 +80,7 @@ function CustomCursor() {
             border: isHovering ? '0px solid #D6FF57' : '2px solid #D6FF57',
             boxShadow: '0 0 10px rgba(214,255,87,0.8)'
           }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
         />
       </motion.div>
     </div>
