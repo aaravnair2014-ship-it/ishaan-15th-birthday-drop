@@ -7,32 +7,34 @@ import confetti from 'canvas-confetti';
 
 function CustomCursor() {
   const isTouchDevice = 'ontouchstart' in window || window.matchMedia('(pointer: coarse)').matches;
+  
+  const [isHovering, setIsHovering] = useState(false);
 
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
-  const scale = useMotionValue(1);
 
-  const springConfig = { damping: 25, stiffness: 300, mass: 0.5 };
+  const springConfig = { damping: 28, stiffness: 500, mass: 0.5 };
   const cursorX = useSpring(mouseX, springConfig);
   const cursorY = useSpring(mouseY, springConfig);
-  const cursorScale = useSpring(scale, springConfig);
 
   useEffect(() => {
     if (isTouchDevice) return;
 
     const handleMouseMove = (e) => {
-      mouseX.set(e.clientX - 6);
-      mouseY.set(e.clientY - 6);
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
     };
 
     const handleMouseOver = (e) => {
-      if (e.target && e.target.closest && (e.target.closest('button') || e.target.closest('a'))) {
-        scale.set(3.333); 
+      if (e.target && e.target.closest && (e.target.closest('button') || e.target.closest('a') || e.target.closest('[data-cursor-hover]'))) {
+        setIsHovering(true);
       }
     };
 
-    const handleMouseOut = () => {
-      scale.set(1);
+    const handleMouseOut = (e) => {
+      if (e.target && e.target.closest && (e.target.closest('button') || e.target.closest('a') || e.target.closest('[data-cursor-hover]'))) {
+        setIsHovering(false);
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -44,19 +46,36 @@ function CustomCursor() {
       window.removeEventListener('mouseover', handleMouseOver);
       window.removeEventListener('mouseout', handleMouseOut);
     };
-  }, [mouseX, mouseY, scale, isTouchDevice]);
+  }, [mouseX, mouseY, isTouchDevice]);
 
   if (isTouchDevice) return null;
 
   return (
     <motion.div
-      className="fixed top-0 left-0 w-3 h-3 bg-lime-punch rounded-full pointer-events-none z-[9999] hidden lg:block"
-      style={{
-        x: cursorX,
-        y: cursorY,
-        scale: cursorScale,
-      }}
-    />
+      className="fixed top-0 left-0 pointer-events-none z-[9999] hidden lg:block"
+      style={{ x: cursorX, y: cursorY }}
+    >
+      <motion.div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center"
+        initial={false}
+        animate={{
+          width: isHovering ? 60 : 20,
+          height: isHovering ? 60 : 20,
+          backgroundColor: isHovering ? 'rgba(214,255,87,0.1)' : 'rgba(214,255,87,0.25)',
+          backdropFilter: isHovering ? 'blur(16px) saturate(180%)' : 'blur(8px) saturate(180%)',
+          WebkitBackdropFilter: isHovering ? 'blur(16px) saturate(180%)' : 'blur(8px) saturate(180%)',
+          border: isHovering ? '1px solid rgba(214,255,87,1)' : '1px solid rgba(214,255,87,0.6)',
+          boxShadow: '0 0 20px rgba(214,255,87,0.3)'
+        }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      >
+        <motion.div 
+          initial={false}
+          animate={{ scale: isHovering ? 1 : 0, opacity: isHovering ? 1 : 0 }}
+          className="w-1.5 h-1.5 bg-[#D6FF57] rounded-full"
+        />
+      </motion.div>
+    </motion.div>
   );
 }
 
