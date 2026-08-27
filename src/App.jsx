@@ -5,6 +5,18 @@ import { Gift, Zap, Crown, Sprout, Share } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
+// ─── SCROLL PROGRESS BAR ───
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  return (
+    <motion.div
+      className="fixed top-0 left-0 right-0 h-[3px] bg-lime-punch z-[9998] origin-left"
+      style={{ scaleX: scrollYProgress }}
+    />
+  );
+}
+
+// ─── CUSTOM CURSOR ───
 function CustomCursor() {
   const isTouchDevice = 'ontouchstart' in window || window.matchMedia('(pointer: coarse)').matches;
   const [isHovering, setIsHovering] = useState(false);
@@ -12,7 +24,6 @@ function CustomCursor() {
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
 
-  // Outer ring spring (smooth lag, zero wiggle)
   const outerX = useSpring(mouseX, { stiffness: 400, damping: 45 });
   const outerY = useSpring(mouseY, { stiffness: 400, damping: 45 });
 
@@ -51,7 +62,6 @@ function CustomCursor() {
 
   return (
     <div className="fixed top-0 left-0 pointer-events-none z-[9999] hidden lg:block">
-      {/* Outer Ring */}
       <motion.div style={{ x: outerX, y: outerY, willChange: 'transform' }} className="absolute top-0 left-0">
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
@@ -68,7 +78,6 @@ function CustomCursor() {
         />
       </motion.div>
 
-      {/* Inner Dot - raw values, no spring, zero wiggle */}
       <motion.div style={{ x: mouseX, y: mouseY, willChange: 'transform' }} className="absolute top-0 left-0">
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
@@ -87,13 +96,14 @@ function CustomCursor() {
   );
 }
 
+// ─── NAVBAR (glass blur 24px) ───
 function Navbar() {
   const { scrollY } = useScroll();
   
   const py = useTransform(scrollY, [0, 100], ["1.5rem", "0.75rem"]);
   const bgOpacity = useTransform(scrollY, [0, 100], [0, 0.7]);
-  const blur = useTransform(scrollY, [0, 100], [0, 12]);
-  const borderOpacity = useTransform(scrollY, [0, 100], [0, 0.1]);
+  const blur = useTransform(scrollY, [0, 100], [0, 24]);
+  const borderOpacity = useTransform(scrollY, [0, 100], [0, 0.06]);
 
   return (
     <motion.nav 
@@ -105,8 +115,8 @@ function Navbar() {
         paddingTop: py,
         paddingBottom: py,
         backgroundColor: useTransform(bgOpacity, v => `rgba(250, 249, 246, ${v})`),
-        backdropFilter: useTransform(blur, v => `blur(${v}px)`),
-        WebkitBackdropFilter: useTransform(blur, v => `blur(${v}px)`),
+        backdropFilter: useTransform(blur, v => `blur(${v}px) saturate(180%)`),
+        WebkitBackdropFilter: useTransform(blur, v => `blur(${v}px) saturate(180%)`),
         borderBottom: useTransform(borderOpacity, v => `1px solid rgba(0, 0, 0, ${v})`)
       }}
     >
@@ -120,57 +130,100 @@ function Navbar() {
   );
 }
 
+// ─── PANDA FACE (OG lively full-eyeball movement) ───
 function PandaFace() {
   const containerRef = useRef(null);
-  
-  const targetEyeWhiteX = useMotionValue(0);
-  const targetEyeWhiteY = useMotionValue(0);
+
+  const targetWhiteX = useMotionValue(0);
+  const targetWhiteY = useMotionValue(0);
   const targetPupilX = useMotionValue(0);
   const targetPupilY = useMotionValue(0);
-  const idleX = useMotionValue(0);
+  const [isNear, setIsNear] = useState(false);
 
-  const combinedPupilX = useTransform(() => targetPupilX.get() + idleX.get());
-
-  const springConfig = { type: "spring", stiffness: 150, damping: 15 };
-  
-  const eyeWhiteX = useSpring(targetEyeWhiteX, springConfig);
-  const eyeWhiteY = useSpring(targetEyeWhiteY, springConfig);
-  const pupilX = useSpring(combinedPupilX, springConfig);
-  const pupilY = useSpring(targetPupilY, springConfig);
+  const springCfg = { stiffness: 200, damping: 18 };
+  const whiteX = useSpring(targetWhiteX, springCfg);
+  const whiteY = useSpring(targetWhiteY, springCfg);
+  const pupilX = useSpring(targetPupilX, springCfg);
+  const pupilY = useSpring(targetPupilY, springCfg);
 
   useEffect(() => {
+    let idleRaf;
+    let lastMoveTime = 0;
+
     const handleMouseMove = (e) => {
       if (!containerRef.current) return;
+      lastMoveTime = Date.now();
       const { left, top, width, height } = containerRef.current.getBoundingClientRect();
       const headCenterX = left + width / 2;
       const headCenterY = top + height / 2;
-      
-      const deltaX = e.clientX - headCenterX;
-      const deltaY = e.clientY - headCenterY;
-      
-      const angle = Math.atan2(deltaY, deltaX);
-      const dist = Math.min(18, Math.hypot(deltaX, deltaY) / 25);
-      const normDist = dist / 18;
-      
-      targetEyeWhiteX.set(Math.cos(angle) * 2.5 * normDist);
-      targetEyeWhiteY.set(Math.sin(angle) * 1.5 * normDist);
-      targetPupilX.set(Math.cos(angle) * 5 * normDist);
-      targetPupilY.set(Math.sin(angle) * 3 * normDist);
+
+      const rawDX = e.clientX - headCenterX;
+      const rawDY = e.clientY - headCenterY;
+      const dist = Math.hypot(rawDX, rawDY);
+
+      setIsNear(dist < 200);
+
+      const eyeRange = 8;
+      const dx = Math.max(-eyeRange, Math.min(eyeRange, (rawDX / window.innerWidth) * eyeRange * 3));
+      const dy = Math.max(-eyeRange, Math.min(eyeRange, (rawDY / window.innerHeight) * eyeRange * 3));
+
+      targetWhiteX.set(dx * 1.5);
+      targetWhiteY.set(dy);
+      targetPupilX.set(dx * 2.5);
+      targetPupilY.set(dy * 2);
+    };
+
+    // idle sine float
+    const runIdle = () => {
+      const now = Date.now();
+      if (now - lastMoveTime > 1500) {
+        const idleVal = Math.sin(now / 1000) * 1;
+        targetWhiteX.set(idleVal * 0.6);
+        targetPupilX.set(idleVal);
+      }
+      idleRaf = requestAnimationFrame(runIdle);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [targetEyeWhiteX, targetEyeWhiteY, targetPupilX, targetPupilY]);
+    idleRaf = requestAnimationFrame(runIdle);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      idleX.set((Math.random() - 0.5) * 1.5);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [idleX]);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(idleRaf);
+    };
+  }, [targetWhiteX, targetWhiteY, targetPupilX, targetPupilY]);
+
+  const EyePatch = ({ rotate }) => (
+    <div className={`w-16 h-20 sm:w-18 sm:h-22 lg:w-20 lg:h-24 bg-charcoal rounded-[2.5rem] sm:rounded-[3rem] ${rotate} flex items-center justify-center relative overflow-hidden`}>
+      {/* White eyeball - moves with cursor */}
+      <motion.div
+        style={{ x: whiteX, y: whiteY }}
+        animate={{
+          scaleY: [1, 1, 0.1, 1],
+          scale: isNear ? 1.1 : 1,
+        }}
+        transition={{
+          scaleY: { duration: 3.5, repeat: Infinity, times: [0, 0.95, 0.97, 1] },
+          scale: { type: "spring", stiffness: 300, damping: 20 },
+        }}
+        className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 bg-white rounded-full flex items-center justify-center relative overflow-hidden"
+      >
+        {/* Black pupil - moves extra inside */}
+        <motion.div
+          style={{ x: pupilX, y: pupilY }}
+          className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-[18px] lg:h-[18px] bg-charcoal rounded-full"
+        />
+      </motion.div>
+    </div>
+  );
 
   return (
-    <div ref={containerRef} className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[28rem] lg:h-[28rem] flex items-center justify-center shrink-0">
+    <motion.div
+      ref={containerRef}
+      animate={{ y: [-10, 10, -10], rotate: [-2, 2, -2] }}
+      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[28rem] lg:h-[28rem] flex items-center justify-center shrink-0"
+    >
       {/* Ears */}
       <div className="absolute top-3 sm:top-4 lg:top-4 left-5 sm:left-8 lg:left-12 w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-charcoal rounded-full" />
       <div className="absolute top-3 sm:top-4 lg:top-4 right-5 sm:right-8 lg:right-12 w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-charcoal rounded-full" />
@@ -180,38 +233,8 @@ function PandaFace() {
         
         {/* Eye patches */}
         <div className="flex gap-8 sm:gap-10 lg:gap-12 mt-4 sm:mt-6">
-          <div className="w-16 h-20 sm:w-18 sm:h-22 lg:w-20 lg:h-24 bg-charcoal rounded-[2.5rem] sm:rounded-[3rem] rotate-[15deg] flex items-center justify-center relative overflow-hidden">
-             {/* Eyeball White */}
-             <motion.div 
-               style={{ x: eyeWhiteX, y: eyeWhiteY }}
-               animate={{ scaleY: [1, 1, 0.1, 1] }}
-               transition={{ duration: 4, repeat: Infinity, times: [0, 0.95, 0.97, 1] }}
-               className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white rounded-full flex items-center justify-center relative overflow-hidden"
-             >
-               {/* Pupil Black */}
-               <motion.div 
-                 style={{ x: pupilX, y: pupilY }}
-                 whileHover={{ scale: 1.2 }}
-                 className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-charcoal rounded-full" 
-               />
-             </motion.div>
-          </div>
-          <div className="w-16 h-20 sm:w-18 sm:h-22 lg:w-20 lg:h-24 bg-charcoal rounded-[2.5rem] sm:rounded-[3rem] -rotate-[15deg] flex items-center justify-center relative overflow-hidden">
-             {/* Eyeball White */}
-             <motion.div 
-               style={{ x: eyeWhiteX, y: eyeWhiteY }}
-               animate={{ scaleY: [1, 1, 0.1, 1] }}
-               transition={{ duration: 4, repeat: Infinity, times: [0, 0.95, 0.97, 1] }}
-               className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white rounded-full flex items-center justify-center relative overflow-hidden"
-             >
-               {/* Pupil Black */}
-               <motion.div 
-                 style={{ x: pupilX, y: pupilY }}
-                 whileHover={{ scale: 1.2 }}
-                 className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-charcoal rounded-full" 
-               />
-             </motion.div>
-          </div>
+          <EyePatch rotate="rotate-[15deg]" />
+          <EyePatch rotate="-rotate-[15deg]" />
         </div>
 
         {/* Nose */}
@@ -220,10 +243,11 @@ function PandaFace() {
         {/* Mouth */}
         <div className="w-12 h-6 sm:w-14 sm:h-7 lg:w-16 lg:h-8 border-b-[3px] lg:border-b-4 border-charcoal rounded-b-full mt-1 sm:mt-2" />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
+// ─── HERO (with floating blurred lime blobs) ───
 const heroVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -252,7 +276,19 @@ function Hero() {
   };
 
   return (
-    <section className="min-h-[100svh] flex flex-col lg:flex-row items-center justify-center lg:justify-between px-6 sm:px-12 lg:px-24 pt-32 sm:pt-40 lg:pt-32 pb-16 lg:pb-12 gap-12 sm:gap-16 lg:gap-16 overflow-hidden">
+    <section className="min-h-[100svh] flex flex-col lg:flex-row items-center justify-center lg:justify-between px-6 sm:px-12 lg:px-24 pt-32 sm:pt-40 lg:pt-32 pb-16 lg:pb-12 gap-12 sm:gap-16 lg:gap-16 overflow-hidden relative">
+      {/* Floating lime blobs */}
+      <motion.div
+        className="absolute top-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-[#D6FF57] opacity-[0.15] blur-[120px] pointer-events-none"
+        animate={{ x: [0, 20, -10, 0], y: [0, -20, 10, 0] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-[#D6FF57] opacity-[0.15] blur-[120px] pointer-events-none"
+        animate={{ x: [0, -20, 15, 0], y: [0, 15, -20, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
+
       <motion.div 
         className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left z-10 w-full max-w-3xl lg:max-w-none"
         variants={heroVariants}
@@ -277,8 +313,8 @@ function Hero() {
               <motion.button 
                 key="btn"
                 exit={{ scale: 0, opacity: 0 }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(214,255,87,0.4)' }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleOpenGift}
                 className="bg-lime-punch text-charcoal px-8 py-4 sm:px-10 sm:py-5 rounded-full font-bold text-lg sm:text-xl flex items-center gap-2 hover:bg-[#cbf740] transition-colors shadow-lg shadow-lime-punch/20"
               >
@@ -303,7 +339,7 @@ function Hero() {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="flex-1 flex justify-center lg:justify-end w-full"
+        className="flex-1 flex justify-center lg:justify-end w-full relative z-10"
       >
         <PandaFace />
       </motion.div>
@@ -311,9 +347,16 @@ function Hero() {
   );
 }
 
+// ─── MARQUEE ───
 function Marquee() {
   return (
-    <div className="py-6 sm:py-8 bg-charcoal text-lime-punch overflow-hidden flex whitespace-nowrap w-full border-y-2 sm:border-y-[3px] border-lime-punch/20 relative items-center">
+    <motion.div
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+      className="py-6 sm:py-8 bg-charcoal text-lime-punch overflow-hidden flex whitespace-nowrap w-full border-y-2 sm:border-y-[3px] border-lime-punch/20 relative items-center"
+    >
       <motion.div
         className="flex whitespace-nowrap text-3xl sm:text-4xl lg:text-6xl font-black tracking-tighter uppercase"
         animate={{ x: ["0%", "-50%"] }}
@@ -341,14 +384,39 @@ function Marquee() {
           </div>
         ))}
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
 
+// ─── FEATURES (blur focus + staggered title + icon spin) ───
 const cardVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } }
 };
+
+function StaggeredTitle({ text }) {
+  return (
+    <motion.h2
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      className="text-4xl sm:text-5xl lg:text-[4rem] font-black tracking-tighter text-charcoal text-center leading-none flex flex-wrap justify-center"
+    >
+      {text.split('').map((char, i) => (
+        <motion.span
+          key={i}
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.4, delay: i * 0.03, ease: [0.16, 1, 0.3, 1] } },
+          }}
+          className={char === ' ' ? 'w-3 sm:w-4' : ''}
+        >
+          {char === ' ' ? '\u00A0' : char}
+        </motion.span>
+      ))}
+    </motion.h2>
+  );
+}
 
 function Features() {
   const [activeCard, setActiveCard] = useState(null);
@@ -373,17 +441,9 @@ function Features() {
 
   return (
     <section className="py-24 sm:py-32 lg:py-40 px-6 sm:px-12 lg:px-24 bg-bamboo-mist relative overflow-hidden">
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-16 sm:mb-20 lg:mb-24 flex justify-center"
-      >
-        <h2 className="text-4xl sm:text-5xl lg:text-[4rem] font-black tracking-tighter text-charcoal text-center leading-none">
-          WHY ISHAAN <br className="sm:hidden lg:hidden"/> = PANDA
-        </h2>
-      </motion.div>
+      <div className="mb-16 sm:mb-20 lg:mb-24 flex justify-center">
+        <StaggeredTitle text="WHY ISHAAN = PANDA" />
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto relative">
         {cards.map((card, i) => {
@@ -393,19 +453,18 @@ function Features() {
           return (
             <motion.div
               key={i}
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
               onMouseEnter={() => setActiveCard(i)}
               onMouseLeave={() => setActiveCard(null)}
               animate={{
                 scale: isActive ? 1.03 : isBlurred ? 0.97 : 1,
-                filter: isBlurred ? 'blur(6px)' : 'blur(0px)',
-                opacity: isBlurred ? 0.6 : 1,
+                filter: isBlurred ? 'blur(8px)' : 'blur(0px)',
+                opacity: isBlurred ? 0.5 : 1,
                 y: isActive ? -8 : 0,
               }}
-              transition={{ type: "tween", duration: 0.4, ease: "easeOut" }}
               className="relative p-8 sm:p-10 lg:p-12 rounded-[24px] sm:rounded-[28px] flex flex-col items-start cursor-default"
               style={{
                 background: isActive ? 'rgba(250,249,246,0.85)' : 'rgba(255,255,255,0.7)',
@@ -413,9 +472,9 @@ function Features() {
                 WebkitBackdropFilter: isActive ? 'blur(20px) saturate(180%)' : 'blur(12px)',
                 border: isActive ? '1px solid rgba(214,255,87,0.5)' : '1px solid rgba(10,10,10,0.06)',
                 boxShadow: isActive ? '0 20px 40px rgba(0,0,0,0.08)' : '0 8px 30px rgba(0,0,0,0.04)',
+                transition: 'all 0.4s ease-out',
               }}
             >
-              {/* Radial lime glow behind active card */}
               {isActive && (
                 <div className="absolute -inset-12 -z-10 rounded-full bg-[#D6FF57] opacity-15 blur-[60px] pointer-events-none" />
               )}
@@ -426,7 +485,8 @@ function Features() {
                   scale: isActive ? 1.1 : 1,
                   boxShadow: isActive ? '0 0 20px rgba(214,255,87,0.5)' : '0 0 0px rgba(214,255,87,0)',
                 }}
-                transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
+                whileHover={{ rotate: 360 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
                 className="w-14 h-14 sm:w-16 sm:h-16 bg-charcoal rounded-2xl flex items-center justify-center mb-8 sm:mb-10"
               >
                 {card.icon}
@@ -441,6 +501,7 @@ function Features() {
   );
 }
 
+// ─── BAMBOO LAB (glass panel) ───
 function Lab() {
   const [bambooCount, setBambooCount] = useState(() => {
     const saved = localStorage.getItem('ishaanBambooCount');
@@ -500,20 +561,43 @@ function Lab() {
   };
 
   return (
-    <section className="py-24 sm:py-32 lg:py-48 px-6 sm:px-12 lg:px-24 flex flex-col items-center justify-center text-center">
+    <section className="py-24 sm:py-32 lg:py-48 px-6 sm:px-12 lg:px-24 flex flex-col items-center justify-center text-center relative overflow-hidden">
+      {/* Background lime glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#D6FF57] opacity-10 blur-[100px] pointer-events-none" />
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 40 }}
         whileInView={{ opacity: 1, scale: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-4xl w-full bg-charcoal rounded-[32px] sm:rounded-[40px] p-8 sm:p-16 lg:p-24 shadow-2xl relative overflow-hidden"
+        className="max-w-4xl w-full rounded-[32px] sm:rounded-[40px] p-8 sm:p-16 lg:p-24 shadow-2xl relative overflow-hidden"
+        style={{
+          background: 'rgba(10,10,10,0.92)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(214,255,87,0.2)',
+        }}
       >
         <div className="absolute top-0 left-0 w-full h-2 sm:h-3 bg-lime-punch"></div>
         
-        <h2 className="text-4xl sm:text-5xl lg:text-[4rem] font-black tracking-tighter text-white mb-4 sm:mb-6 leading-none">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-4xl sm:text-5xl lg:text-[4rem] font-black tracking-tighter text-white mb-4 sm:mb-6 leading-none"
+        >
           BAMBOO LAB
-        </h2>
-        <p className="text-gray-400 text-base sm:text-lg lg:text-xl mb-10 sm:mb-12 font-medium tracking-tight">Keep the panda energized for year 15.</p>
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-gray-400 text-base sm:text-lg lg:text-xl mb-10 sm:mb-12 font-medium tracking-tight"
+        >
+          Keep the panda energized for year 15.
+        </motion.p>
         
         <div className="flex flex-col items-center mb-12 sm:mb-16">
           <div className="text-gray-500 font-bold uppercase tracking-widest text-xs sm:text-sm mb-3 sm:mb-4">Bamboo Fed</div>
@@ -530,8 +614,8 @@ function Lab() {
 
         <motion.button
           disabled={isCooldown}
-          whileHover={!isCooldown ? { scale: 1.04 } : {}}
-          whileTap={!isCooldown ? { scale: 0.96 } : {}}
+          whileHover={!isCooldown ? { scale: 1.05, boxShadow: '0 0 30px rgba(214,255,87,0.4)' } : {}}
+          whileTap={!isCooldown ? { scale: 0.95 } : {}}
           animate={{ scale: isCooldown ? 0.95 : 1, opacity: isCooldown ? 0.7 : 1 }}
           onClick={handleFeed}
           className="bg-lime-punch text-charcoal px-8 py-5 sm:px-10 sm:py-6 rounded-full font-black text-lg sm:text-xl lg:text-2xl flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto mx-auto shadow-[0_0_40px_rgba(214,255,87,0.2)] hover:shadow-[0_0_60px_rgba(214,255,87,0.4)] transition-shadow relative z-10 min-w-[280px]"
@@ -563,15 +647,19 @@ function Lab() {
   );
 }
 
+// ─── FOOTER (glass blur) ───
 function Footer() {
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     toast("Gift link copied!", {
       icon: '🔗',
       style: {
-        background: '#FAF9F6',
-        color: '#0A0A0A',
-        border: 'none',
+        background: 'rgba(10,10,10,0.75)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        border: '1px solid rgba(214,255,87,0.3)',
+        color: '#FAF9F6',
+        borderRadius: '16px',
         fontWeight: 'bold',
         fontSize: '15px'
       }
@@ -579,7 +667,18 @@ function Footer() {
   };
 
   return (
-    <footer className="bg-charcoal text-white py-12 sm:py-16 px-6 sm:px-12 lg:px-24 flex flex-col lg:flex-row items-center justify-between border-t border-white/10 rounded-t-[32px] sm:rounded-t-[40px] lg:rounded-t-[60px] mx-2 sm:mx-4 lg:mx-6 mb-2 sm:mb-4 lg:mb-6 gap-8 lg:gap-0">
+    <motion.footer
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      className="text-white py-12 sm:py-16 px-6 sm:px-12 lg:px-24 flex flex-col lg:flex-row items-center justify-between border-t border-white/10 rounded-t-[32px] sm:rounded-t-[40px] lg:rounded-t-[60px] mx-2 sm:mx-4 lg:mx-6 mb-2 sm:mb-4 lg:mb-6 gap-8 lg:gap-0"
+      style={{
+        background: 'rgba(10,10,10,0.8)',
+        backdropFilter: 'blur(16px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+      }}
+    >
       <div className="flex flex-col items-center lg:items-start gap-1">
         <div className="font-bold tracking-tight text-gray-400 text-center lg:text-left text-sm sm:text-base">
           Built by Aarav for Ishaan's 15th
@@ -589,22 +688,27 @@ function Footer() {
         </div>
       </div>
       
-      <div className="text-lime-punch font-black tracking-tighter text-4xl sm:text-5xl order-first lg:order-none text-center">
+      <motion.div
+        animate={{ opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        className="text-lime-punch font-black tracking-tighter text-4xl sm:text-5xl order-first lg:order-none text-center"
+      >
         STAY BAMBOO
-      </div>
+      </motion.div>
       
       <motion.button 
         onClick={handleShare}
-        whileHover={{ scale: 1.05 }}
+        whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(214,255,87,0.4)' }}
         whileTap={{ scale: 0.95 }}
         className="bg-white/10 hover:bg-white/20 transition-colors text-white px-6 py-3 rounded-full font-bold text-sm sm:text-base flex items-center gap-2"
       >
         Share this gift <Share className="w-4 h-4" />
       </motion.button>
-    </footer>
+    </motion.footer>
   );
 }
 
+// ─── APP ───
 export default function App() {
   useEffect(() => {
     const lenis = new Lenis({
@@ -632,6 +736,7 @@ export default function App() {
         className="fixed inset-0 z-[9998] pointer-events-none opacity-[0.04]"
         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
       />
+      <ScrollProgress />
       <CustomCursor />
       <Toaster position="bottom-right" />
       <Navbar />
