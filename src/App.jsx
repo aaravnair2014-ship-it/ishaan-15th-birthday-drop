@@ -89,27 +89,52 @@ function Navbar() {
 
 function PandaFace() {
   const containerRef = useRef(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  
+  const targetEyeWhiteX = useMotionValue(0);
+  const targetEyeWhiteY = useMotionValue(0);
+  const targetPupilX = useMotionValue(0);
+  const targetPupilY = useMotionValue(0);
+  const idleX = useMotionValue(0);
 
-  const springConfig = { damping: 25, stiffness: 200 };
-  const eyeX = useSpring(mouseX, springConfig);
-  const eyeY = useSpring(mouseY, springConfig);
+  const combinedPupilX = useTransform(() => targetPupilX.get() + idleX.get());
+
+  const springConfig = { type: "spring", stiffness: 150, damping: 15 };
+  
+  const eyeWhiteX = useSpring(targetEyeWhiteX, springConfig);
+  const eyeWhiteY = useSpring(targetEyeWhiteY, springConfig);
+  const pupilX = useSpring(combinedPupilX, springConfig);
+  const pupilY = useSpring(targetPupilY, springConfig);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!containerRef.current) return;
       const { left, top, width, height } = containerRef.current.getBoundingClientRect();
-      const x = (e.clientX - (left + width / 2)) / (width / 2);
-      const y = (e.clientY - (top + height / 2)) / (height / 2);
+      const headCenterX = left + width / 2;
+      const headCenterY = top + height / 2;
       
-      mouseX.set(x * 12); 
-      mouseY.set(y * 12);
+      const deltaX = e.clientX - headCenterX;
+      const deltaY = e.clientY - headCenterY;
+      
+      const angle = Math.atan2(deltaY, deltaX);
+      const dist = Math.min(18, Math.hypot(deltaX, deltaY) / 25);
+      const normDist = dist / 18;
+      
+      targetEyeWhiteX.set(Math.cos(angle) * 2.5 * normDist);
+      targetEyeWhiteY.set(Math.sin(angle) * 1.5 * normDist);
+      targetPupilX.set(Math.cos(angle) * 5 * normDist);
+      targetPupilY.set(Math.sin(angle) * 3 * normDist);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
+  }, [targetEyeWhiteX, targetEyeWhiteY, targetPupilX, targetPupilY]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      idleX.set((Math.random() - 0.5) * 1.5);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [idleX]);
 
   return (
     <div ref={containerRef} className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[28rem] lg:h-[28rem] flex items-center justify-center shrink-0">
@@ -123,25 +148,35 @@ function PandaFace() {
         {/* Eye patches */}
         <div className="flex gap-8 sm:gap-10 lg:gap-12 mt-4 sm:mt-6">
           <div className="w-16 h-20 sm:w-18 sm:h-22 lg:w-20 lg:h-24 bg-charcoal rounded-[2.5rem] sm:rounded-[3rem] rotate-[15deg] flex items-center justify-center relative overflow-hidden">
-             {/* Eyeball */}
+             {/* Eyeball White */}
              <motion.div 
-               style={{ x: eyeX, y: eyeY }}
+               style={{ x: eyeWhiteX, y: eyeWhiteY }}
                animate={{ scaleY: [1, 1, 0.1, 1] }}
                transition={{ duration: 4, repeat: Infinity, times: [0, 0.95, 0.97, 1] }}
-               className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white rounded-full flex items-center justify-center"
+               className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white rounded-full flex items-center justify-center relative overflow-hidden"
              >
-               <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 bg-charcoal rounded-full" />
+               {/* Pupil Black */}
+               <motion.div 
+                 style={{ x: pupilX, y: pupilY }}
+                 whileHover={{ scale: 1.2 }}
+                 className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-charcoal rounded-full" 
+               />
              </motion.div>
           </div>
           <div className="w-16 h-20 sm:w-18 sm:h-22 lg:w-20 lg:h-24 bg-charcoal rounded-[2.5rem] sm:rounded-[3rem] -rotate-[15deg] flex items-center justify-center relative overflow-hidden">
-             {/* Eyeball */}
+             {/* Eyeball White */}
              <motion.div 
-               style={{ x: eyeX, y: eyeY }}
+               style={{ x: eyeWhiteX, y: eyeWhiteY }}
                animate={{ scaleY: [1, 1, 0.1, 1] }}
                transition={{ duration: 4, repeat: Infinity, times: [0, 0.95, 0.97, 1] }}
-               className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white rounded-full flex items-center justify-center"
+               className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white rounded-full flex items-center justify-center relative overflow-hidden"
              >
-               <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 bg-charcoal rounded-full" />
+               {/* Pupil Black */}
+               <motion.div 
+                 style={{ x: pupilX, y: pupilY }}
+                 whileHover={{ scale: 1.2 }}
+                 className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-charcoal rounded-full" 
+               />
              </motion.div>
           </div>
         </div>
