@@ -351,6 +351,8 @@ const cardVariants = {
 };
 
 function Features() {
+  const [activeCard, setActiveCard] = useState(null);
+
   const cards = [
     {
       title: "CHILL ENERGY",
@@ -370,7 +372,7 @@ function Features() {
   ];
 
   return (
-    <section className="py-24 sm:py-32 lg:py-40 px-6 sm:px-12 lg:px-24 bg-bamboo-mist">
+    <section className="py-24 sm:py-32 lg:py-40 px-6 sm:px-12 lg:px-24 bg-bamboo-mist relative overflow-hidden">
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -383,24 +385,57 @@ function Features() {
         </h2>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
-        {cards.map((card, i) => (
-          <motion.div
-            key={i}
-            variants={cardVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            whileHover={{ scale: 1.02, y: -8 }}
-            className="bg-white/70 backdrop-blur-xl p-8 sm:p-10 lg:p-12 rounded-[28px] sm:rounded-[32px] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col items-start"
-          >
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-charcoal rounded-2xl flex items-center justify-center mb-8 sm:mb-10 -rotate-3">
-              {card.icon}
-            </div>
-            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-charcoal mb-3 sm:mb-4 uppercase leading-none">{card.title}</h3>
-            <p className="text-gray-600 font-medium leading-relaxed text-base sm:text-lg">{card.desc}</p>
-          </motion.div>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto relative">
+        {cards.map((card, i) => {
+          const isActive = activeCard === i;
+          const isBlurred = activeCard !== null && activeCard !== i;
+
+          return (
+            <motion.div
+              key={i}
+              variants={cardVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              onMouseEnter={() => setActiveCard(i)}
+              onMouseLeave={() => setActiveCard(null)}
+              animate={{
+                scale: isActive ? 1.03 : isBlurred ? 0.97 : 1,
+                filter: isBlurred ? 'blur(6px)' : 'blur(0px)',
+                opacity: isBlurred ? 0.6 : 1,
+                y: isActive ? -8 : 0,
+              }}
+              transition={{ type: "tween", duration: 0.4, ease: "easeOut" }}
+              className="relative p-8 sm:p-10 lg:p-12 rounded-[24px] sm:rounded-[28px] flex flex-col items-start cursor-default"
+              style={{
+                background: isActive ? 'rgba(250,249,246,0.85)' : 'rgba(255,255,255,0.7)',
+                backdropFilter: isActive ? 'blur(20px) saturate(180%)' : 'blur(12px)',
+                WebkitBackdropFilter: isActive ? 'blur(20px) saturate(180%)' : 'blur(12px)',
+                border: isActive ? '1px solid rgba(214,255,87,0.5)' : '1px solid rgba(10,10,10,0.06)',
+                boxShadow: isActive ? '0 20px 40px rgba(0,0,0,0.08)' : '0 8px 30px rgba(0,0,0,0.04)',
+              }}
+            >
+              {/* Radial lime glow behind active card */}
+              {isActive && (
+                <div className="absolute -inset-12 -z-10 rounded-full bg-[#D6FF57] opacity-15 blur-[60px] pointer-events-none" />
+              )}
+
+              <motion.div
+                animate={{
+                  rotate: isActive ? 8 : -3,
+                  scale: isActive ? 1.1 : 1,
+                  boxShadow: isActive ? '0 0 20px rgba(214,255,87,0.5)' : '0 0 0px rgba(214,255,87,0)',
+                }}
+                transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
+                className="w-14 h-14 sm:w-16 sm:h-16 bg-charcoal rounded-2xl flex items-center justify-center mb-8 sm:mb-10"
+              >
+                {card.icon}
+              </motion.div>
+              <h3 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-charcoal mb-3 sm:mb-4 uppercase leading-none">{card.title}</h3>
+              <p className="text-gray-600 font-medium leading-relaxed text-base sm:text-lg">{card.desc}</p>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
   );
