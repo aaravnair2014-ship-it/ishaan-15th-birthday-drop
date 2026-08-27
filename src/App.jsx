@@ -23,7 +23,7 @@ function CustomCursor() {
 
     const handleMouseOver = (e) => {
       if (e.target && e.target.closest && (e.target.closest('button') || e.target.closest('a'))) {
-        scale.set(3.333); // 12px * 3.333 ≈ 40px
+        scale.set(3.333); 
       }
     };
 
@@ -44,7 +44,7 @@ function CustomCursor() {
 
   return (
     <motion.div
-      className="fixed top-0 left-0 w-3 h-3 bg-lime-punch rounded-full pointer-events-none z-[9999] hidden md:block"
+      className="fixed top-0 left-0 w-3 h-3 bg-lime-punch rounded-full pointer-events-none z-[9999] hidden lg:block"
       style={{
         x: cursorX,
         y: cursorY,
@@ -67,7 +67,7 @@ function Navbar() {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="fixed top-0 left-0 w-full px-6 md:px-12 flex items-center justify-between z-50 transition-colors"
+      className="fixed top-0 left-0 w-full px-6 sm:px-12 lg:px-24 flex items-center justify-between z-50 transition-colors"
       style={{
         paddingTop: py,
         paddingBottom: py,
@@ -77,10 +77,10 @@ function Navbar() {
         borderBottom: useTransform(borderOpacity, v => `1px solid rgba(0, 0, 0, ${v})`)
       }}
     >
-      <div className="text-xl md:text-2xl font-black tracking-tighter text-charcoal">
+      <div className="text-xl sm:text-2xl font-black tracking-tighter text-charcoal">
         FOR ISHAAN
       </div>
-      <div className="font-bold tracking-tight text-xs md:text-sm uppercase text-charcoal bg-charcoal/5 px-5 py-2.5 rounded-full border border-charcoal/10 shadow-sm backdrop-blur-md">
+      <div className="font-bold tracking-tight text-[10px] sm:text-xs lg:text-sm uppercase text-charcoal bg-charcoal/5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-charcoal/10 shadow-sm backdrop-blur-md">
         Gift by Aarav • 15
       </div>
     </motion.nav>
@@ -112,45 +112,45 @@ function PandaFace() {
   }, [mouseX, mouseY]);
 
   return (
-    <div ref={containerRef} className="relative w-64 h-64 md:w-[28rem] md:h-[28rem] flex items-center justify-center">
+    <div ref={containerRef} className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[28rem] lg:h-[28rem] flex items-center justify-center shrink-0">
       {/* Ears */}
-      <div className="absolute top-4 left-6 md:left-12 w-20 h-20 md:w-28 md:h-28 bg-charcoal rounded-full" />
-      <div className="absolute top-4 right-6 md:right-12 w-20 h-20 md:w-28 md:h-28 bg-charcoal rounded-full" />
+      <div className="absolute top-3 sm:top-4 lg:top-4 left-5 sm:left-8 lg:left-12 w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-charcoal rounded-full" />
+      <div className="absolute top-3 sm:top-4 lg:top-4 right-5 sm:right-8 lg:right-12 w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-charcoal rounded-full" />
       
       {/* Face */}
-      <div className="relative w-56 h-48 md:w-80 md:h-72 bg-white rounded-[100px] shadow-2xl border-4 border-bamboo-mist flex flex-col items-center justify-center overflow-hidden z-10">
+      <div className="relative w-56 h-48 sm:w-72 sm:h-60 lg:w-80 lg:h-72 bg-white rounded-[100px] shadow-2xl border-[3px] sm:border-4 border-bamboo-mist flex flex-col items-center justify-center overflow-hidden z-10">
         
         {/* Eye patches */}
-        <div className="flex gap-8 md:gap-12 mt-4">
-          <div className="w-16 h-20 md:w-20 md:h-24 bg-charcoal rounded-[3rem] rotate-[15deg] flex items-center justify-center relative overflow-hidden">
+        <div className="flex gap-8 sm:gap-10 lg:gap-12 mt-4 sm:mt-6">
+          <div className="w-16 h-20 sm:w-18 sm:h-22 lg:w-20 lg:h-24 bg-charcoal rounded-[2.5rem] sm:rounded-[3rem] rotate-[15deg] flex items-center justify-center relative overflow-hidden">
              {/* Eyeball */}
              <motion.div 
                style={{ x: eyeX, y: eyeY }}
                animate={{ scaleY: [1, 1, 0.1, 1] }}
                transition={{ duration: 4, repeat: Infinity, times: [0, 0.95, 0.97, 1] }}
-               className="w-6 h-6 md:w-8 md:h-8 bg-white rounded-full flex items-center justify-center"
+               className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white rounded-full flex items-center justify-center"
              >
-               <div className="w-2 h-2 md:w-3 md:h-3 bg-charcoal rounded-full" />
+               <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 bg-charcoal rounded-full" />
              </motion.div>
           </div>
-          <div className="w-16 h-20 md:w-20 md:h-24 bg-charcoal rounded-[3rem] -rotate-[15deg] flex items-center justify-center relative overflow-hidden">
+          <div className="w-16 h-20 sm:w-18 sm:h-22 lg:w-20 lg:h-24 bg-charcoal rounded-[2.5rem] sm:rounded-[3rem] -rotate-[15deg] flex items-center justify-center relative overflow-hidden">
              {/* Eyeball */}
              <motion.div 
                style={{ x: eyeX, y: eyeY }}
                animate={{ scaleY: [1, 1, 0.1, 1] }}
                transition={{ duration: 4, repeat: Infinity, times: [0, 0.95, 0.97, 1] }}
-               className="w-6 h-6 md:w-8 md:h-8 bg-white rounded-full flex items-center justify-center"
+               className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white rounded-full flex items-center justify-center"
              >
-               <div className="w-2 h-2 md:w-3 md:h-3 bg-charcoal rounded-full" />
+               <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 bg-charcoal rounded-full" />
              </motion.div>
           </div>
         </div>
 
         {/* Nose */}
-        <div className="w-8 h-5 md:w-10 md:h-6 bg-charcoal rounded-full mt-4 md:mt-6" />
+        <div className="w-8 h-5 sm:w-9 sm:h-5 lg:w-10 lg:h-6 bg-charcoal rounded-full mt-4 sm:mt-5 lg:mt-6" />
         
         {/* Mouth */}
-        <div className="w-12 h-6 md:w-16 md:h-8 border-b-[3px] md:border-b-4 border-charcoal rounded-b-full mt-1" />
+        <div className="w-12 h-6 sm:w-14 sm:h-7 lg:w-16 lg:h-8 border-b-[3px] lg:border-b-4 border-charcoal rounded-b-full mt-1 sm:mt-2" />
       </div>
     </div>
   );
@@ -184,26 +184,26 @@ function Hero() {
   };
 
   return (
-    <section className="min-h-screen flex flex-col md:flex-row items-center justify-center md:justify-between px-6 md:px-24 pt-32 pb-12 gap-16 overflow-hidden">
+    <section className="min-h-[100svh] flex flex-col lg:flex-row items-center justify-center lg:justify-between px-6 sm:px-12 lg:px-24 pt-32 sm:pt-40 lg:pt-32 pb-16 lg:pb-12 gap-12 sm:gap-16 lg:gap-16 overflow-hidden">
       <motion.div 
-        className="flex-1 flex flex-col items-start z-10 w-full"
+        className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left z-10 w-full max-w-3xl lg:max-w-none"
         variants={heroVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={itemVariants} className="inline-block bg-charcoal text-lime-punch text-xs md:text-sm font-bold tracking-widest uppercase px-5 py-2 rounded-full mb-8">
+        <motion.div variants={itemVariants} className="inline-block bg-charcoal text-lime-punch text-xs sm:text-sm font-bold tracking-widest uppercase px-5 py-2 rounded-full mb-6 sm:mb-8">
           A BIRTHDAY DROP FOR
         </motion.div>
         
-        <motion.h1 variants={itemVariants} className="text-[14vw] md:text-[8rem] leading-[0.85] font-black tracking-tighter text-charcoal mb-8">
-          ISHAAN <br /> <span className="text-gray-300">//</span> FIFTEEN
+        <motion.h1 variants={itemVariants} className="text-[16vw] sm:text-[12vw] lg:text-[8rem] leading-[0.85] font-black tracking-tighter text-charcoal mb-6 sm:mb-8">
+          ISHAAN <br className="hidden sm:block lg:hidden" /> <span className="text-gray-300">//</span> FIFTEEN
         </motion.h1>
 
-        <motion.p variants={itemVariants} className="text-lg md:text-2xl text-gray-600 max-w-lg mb-10 font-medium leading-relaxed tracking-tight">
+        <motion.p variants={itemVariants} className="text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-lg mb-8 sm:mb-10 font-medium leading-relaxed tracking-tight">
           From Aarav. Panda-powered since day one. This is your corner of the internet.
         </motion.p>
 
-        <motion.div variants={itemVariants} className="flex flex-wrap gap-4 min-h-[4rem] items-center">
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row flex-wrap gap-4 min-h-[4rem] items-center justify-center lg:justify-start">
           <AnimatePresence mode="wait">
             {!isOpen ? (
               <motion.button 
@@ -212,7 +212,7 @@ function Hero() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleOpenGift}
-                className="bg-lime-punch text-charcoal px-8 py-4 rounded-full font-bold text-lg flex items-center gap-2 hover:bg-[#cbf740] transition-colors shadow-lg shadow-lime-punch/20"
+                className="bg-lime-punch text-charcoal px-8 py-4 sm:px-10 sm:py-5 rounded-full font-bold text-lg sm:text-xl flex items-center gap-2 hover:bg-[#cbf740] transition-colors shadow-lg shadow-lime-punch/20"
               >
                 Open Your Gift <Gift className="w-5 h-5 ml-1" />
               </motion.button>
@@ -222,7 +222,7 @@ function Hero() {
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="bg-charcoal text-white px-6 py-4 md:px-8 md:py-4 rounded-[2rem] border border-white/10 font-bold text-base md:text-lg shadow-2xl tracking-tight"
+                className="bg-charcoal text-white px-6 py-4 sm:px-8 sm:py-5 rounded-[2rem] border border-white/10 font-bold text-base sm:text-lg lg:text-xl shadow-2xl tracking-tight"
               >
                 Happy 15th Ishaan - Stay Bamboo 🐼 - Aarav
               </motion.div>
@@ -235,7 +235,7 @@ function Hero() {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="flex-1 flex justify-center md:justify-end w-full"
+        className="flex-1 flex justify-center lg:justify-end w-full"
       >
         <PandaFace />
       </motion.div>
@@ -245,9 +245,9 @@ function Hero() {
 
 function Marquee() {
   return (
-    <div className="py-8 bg-charcoal text-lime-punch overflow-hidden flex whitespace-nowrap w-full border-y md:border-y-[3px] border-lime-punch/20 relative items-center">
+    <div className="py-6 sm:py-8 bg-charcoal text-lime-punch overflow-hidden flex whitespace-nowrap w-full border-y-2 sm:border-y-[3px] border-lime-punch/20 relative items-center">
       <motion.div
-        className="flex whitespace-nowrap text-3xl md:text-6xl font-black tracking-tighter uppercase"
+        className="flex whitespace-nowrap text-3xl sm:text-4xl lg:text-6xl font-black tracking-tighter uppercase"
         animate={{ x: ["0%", "-50%"] }}
         transition={{
           repeat: Infinity,
@@ -258,18 +258,18 @@ function Marquee() {
       >
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-center">
-            <span className="mx-6 md:mx-10">FOR ISHAAN</span>
-            <span className="mx-6 md:mx-10 text-lime-punch/50">•</span>
-            <span className="mx-6 md:mx-10">15</span>
-            <span className="mx-6 md:mx-10 text-lime-punch/50">•</span>
-            <span className="mx-6 md:mx-10">RARE</span>
-            <span className="mx-6 md:mx-10 text-lime-punch/50">•</span>
-            <span className="mx-6 md:mx-10">REAL</span>
-            <span className="mx-6 md:mx-10 text-lime-punch/50">•</span>
-            <span className="mx-6 md:mx-10">CHILL</span>
-            <span className="mx-6 md:mx-10 text-lime-punch/50">•</span>
-            <span className="mx-6 md:mx-10">BAMBOO POWERED</span>
-            <span className="mx-6 md:mx-10 text-lime-punch/50">•</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10">FOR ISHAAN</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10 text-lime-punch/50">•</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10">15</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10 text-lime-punch/50">•</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10">RARE</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10 text-lime-punch/50">•</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10">REAL</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10 text-lime-punch/50">•</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10">CHILL</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10 text-lime-punch/50">•</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10">BAMBOO POWERED</span>
+            <span className="mx-4 sm:mx-6 lg:mx-10 text-lime-punch/50">•</span>
           </div>
         ))}
       </motion.div>
@@ -287,35 +287,35 @@ function Features() {
     {
       title: "CHILL ENERGY",
       desc: "Stays calm under pressure. Unbothered, focused, moving at his own pace.",
-      icon: <Zap className="w-8 h-8 text-lime-punch" />
+      icon: <Zap className="w-7 h-7 sm:w-8 sm:h-8 text-lime-punch" />
     },
     {
       title: "RARE & REAL",
       desc: "A 1% mindset. No fake flexes, just genuine vibes and authentic moves.",
-      icon: <Crown className="w-8 h-8 text-lime-punch" />
+      icon: <Crown className="w-7 h-7 sm:w-8 sm:h-8 text-lime-punch" />
     },
     {
       title: "LEGEND IN THE MAKING",
       desc: "15 years of leveling up. The best chapters haven't even been written yet.",
-      icon: <Sprout className="w-8 h-8 text-lime-punch" />
+      icon: <Sprout className="w-7 h-7 sm:w-8 sm:h-8 text-lime-punch" />
     }
   ];
 
   return (
-    <section className="py-24 md:py-40 px-6 md:px-24 bg-bamboo-mist">
+    <section className="py-24 sm:py-32 lg:py-40 px-6 sm:px-12 lg:px-24 bg-bamboo-mist">
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-16 md:mb-24 flex justify-center"
+        className="mb-16 sm:mb-20 lg:mb-24 flex justify-center"
       >
-        <h2 className="text-4xl md:text-[4rem] font-black tracking-tighter text-charcoal text-center leading-none">
-          WHY ISHAAN <br className="md:hidden"/> = PANDA
+        <h2 className="text-4xl sm:text-5xl lg:text-[4rem] font-black tracking-tighter text-charcoal text-center leading-none">
+          WHY ISHAAN <br className="sm:hidden lg:hidden"/> = PANDA
         </h2>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
         {cards.map((card, i) => (
           <motion.div
             key={i}
@@ -324,13 +324,13 @@ function Features() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             whileHover={{ scale: 1.02, y: -8 }}
-            className="bg-white/70 backdrop-blur-xl p-10 md:p-12 rounded-[32px] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col items-start"
+            className="bg-white/70 backdrop-blur-xl p-8 sm:p-10 lg:p-12 rounded-[28px] sm:rounded-[32px] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col items-start"
           >
-            <div className="w-16 h-16 bg-charcoal rounded-2xl flex items-center justify-center mb-10 -rotate-3">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-charcoal rounded-2xl flex items-center justify-center mb-8 sm:mb-10 -rotate-3">
               {card.icon}
             </div>
-            <h3 className="text-2xl md:text-3xl font-black tracking-tight text-charcoal mb-4 uppercase leading-none">{card.title}</h3>
-            <p className="text-gray-600 font-medium leading-relaxed text-lg">{card.desc}</p>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-charcoal mb-3 sm:mb-4 uppercase leading-none">{card.title}</h3>
+            <p className="text-gray-600 font-medium leading-relaxed text-base sm:text-lg">{card.desc}</p>
           </motion.div>
         ))}
       </div>
@@ -364,29 +364,29 @@ function Lab() {
   };
 
   return (
-    <section className="py-32 md:py-48 px-6 md:px-24 flex flex-col items-center justify-center text-center">
+    <section className="py-24 sm:py-32 lg:py-48 px-6 sm:px-12 lg:px-24 flex flex-col items-center justify-center text-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 40 }}
         whileInView={{ opacity: 1, scale: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-3xl w-full bg-charcoal rounded-[40px] p-12 md:p-24 shadow-2xl relative overflow-hidden"
+        className="max-w-4xl w-full bg-charcoal rounded-[32px] sm:rounded-[40px] p-8 sm:p-16 lg:p-24 shadow-2xl relative overflow-hidden"
       >
-        <div className="absolute top-0 left-0 w-full h-3 bg-lime-punch"></div>
+        <div className="absolute top-0 left-0 w-full h-2 sm:h-3 bg-lime-punch"></div>
         
-        <h2 className="text-4xl md:text-[4rem] font-black tracking-tighter text-white mb-6 leading-none">
+        <h2 className="text-4xl sm:text-5xl lg:text-[4rem] font-black tracking-tighter text-white mb-4 sm:mb-6 leading-none">
           BAMBOO LAB
         </h2>
-        <p className="text-gray-400 text-lg md:text-xl mb-12 font-medium tracking-tight">Keep the panda energized for year 15.</p>
+        <p className="text-gray-400 text-base sm:text-lg lg:text-xl mb-10 sm:mb-12 font-medium tracking-tight">Keep the panda energized for year 15.</p>
         
-        <div className="flex flex-col items-center mb-16">
-          <div className="text-gray-500 font-bold uppercase tracking-widest text-sm mb-4">Bamboo Fed</div>
+        <div className="flex flex-col items-center mb-12 sm:mb-16">
+          <div className="text-gray-500 font-bold uppercase tracking-widest text-xs sm:text-sm mb-3 sm:mb-4">Bamboo Fed</div>
           <motion.div 
             key={bambooCount}
             initial={{ scale: 0.5, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="text-[6rem] md:text-[8rem] leading-none font-black text-lime-punch tabular-nums"
+            className="text-[5rem] sm:text-[7rem] lg:text-[8rem] leading-none font-black text-lime-punch tabular-nums"
           >
             {bambooCount}
           </motion.div>
@@ -396,9 +396,9 @@ function Lab() {
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.96 }}
           onClick={handleFeed}
-          className="bg-lime-punch text-charcoal px-10 py-6 rounded-full font-black text-xl md:text-2xl flex items-center justify-center gap-3 w-full md:w-auto mx-auto shadow-[0_0_40px_rgba(214,255,87,0.2)] hover:shadow-[0_0_60px_rgba(214,255,87,0.4)] transition-shadow relative z-10"
+          className="bg-lime-punch text-charcoal px-8 py-5 sm:px-10 sm:py-6 rounded-full font-black text-lg sm:text-xl lg:text-2xl flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto mx-auto shadow-[0_0_40px_rgba(214,255,87,0.2)] hover:shadow-[0_0_60px_rgba(214,255,87,0.4)] transition-shadow relative z-10"
         >
-          Aarav fed the Panda <Sprout className="w-6 h-6 md:w-8 md:h-8" />
+          Aarav fed the Panda <Sprout className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
         </motion.button>
       </motion.div>
     </section>
@@ -421,17 +421,17 @@ function Footer() {
   };
 
   return (
-    <footer className="bg-charcoal text-white py-16 px-6 md:px-24 flex flex-col md:flex-row items-center justify-between border-t border-white/10 rounded-t-[40px] md:rounded-t-[60px] mx-2 md:mx-6 mb-2 md:mb-6 gap-8 md:gap-0">
-      <div className="flex flex-col items-center md:items-start gap-1">
-        <div className="font-bold tracking-tight text-gray-400 text-center md:text-left">
+    <footer className="bg-charcoal text-white py-12 sm:py-16 px-6 sm:px-12 lg:px-24 flex flex-col lg:flex-row items-center justify-between border-t border-white/10 rounded-t-[32px] sm:rounded-t-[40px] lg:rounded-t-[60px] mx-2 sm:mx-4 lg:mx-6 mb-2 sm:mb-4 lg:mb-6 gap-8 lg:gap-0">
+      <div className="flex flex-col items-center lg:items-start gap-1">
+        <div className="font-bold tracking-tight text-gray-400 text-center lg:text-left text-sm sm:text-base">
           Built by Aarav for Ishaan's 15th
         </div>
-        <div className="font-bold tracking-tight text-gray-500 text-sm">
+        <div className="font-bold tracking-tight text-gray-500 text-xs sm:text-sm">
           © 2026
         </div>
       </div>
       
-      <div className="text-lime-punch font-black tracking-tighter text-4xl md:text-5xl order-first md:order-none text-center">
+      <div className="text-lime-punch font-black tracking-tighter text-4xl sm:text-5xl order-first lg:order-none text-center">
         STAY BAMBOO
       </div>
       
@@ -439,7 +439,7 @@ function Footer() {
         onClick={handleShare}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="bg-white/10 hover:bg-white/20 transition-colors text-white px-6 py-3 rounded-full font-bold text-sm md:text-base flex items-center gap-2"
+        className="bg-white/10 hover:bg-white/20 transition-colors text-white px-6 py-3 rounded-full font-bold text-sm sm:text-base flex items-center gap-2"
       >
         Share this gift <Share className="w-4 h-4" />
       </motion.button>
